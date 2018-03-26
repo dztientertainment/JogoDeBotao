@@ -3,10 +3,10 @@ using System.Collections;
 
 public class ButtonCamera : MonoBehaviour {
 
-	public CameraControl cameraControl;
+	public Camera camera;
+	public GameObject ball;
 
-	void OnMouseDown(){
-		cameraControl.changeCamera ();
-		
+	public void OnMouseDown(){
+		Camera.current.transform.position = ball.transform.position;
 	}
 }
