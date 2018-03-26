@@ -13,7 +13,7 @@ public class Intensity : MonoBehaviour {
 		if(i!=null) GameObject.Destroy( i );
 		i = (GameObject)GameObject.Instantiate(	intensity
 		                                      	,buttonPiece.transform.position
-		                                        ,Quaternion.LookRotation( Camera.main.ScreenToWorldPoint (Input.mousePosition)) );
+		                                        ,Quaternion.identity);
 		//i.transform.position [2] = 0;
 	}
 	static public void disappear(){
@@ -24,33 +24,23 @@ public class Intensity : MonoBehaviour {
 	}
 
 	void Start(){
-		intensity = Resources.Load<GameObject> ("Prefab/Intensity");
+		intensity = Resources.Load<GameObject> ("Prefab/IntensityBar");
 	}
 
 	void Update () {
 
 		if (i != null) {
+			Vector3 d = Camera.main.ScreenToWorldPoint (Input.mousePosition) - i.transform.position;
+			i.transform.rotation = Quaternion.Euler (0.0f
+			                                        ,0.0f
+			                                        ,Mathf.Atan2(d.y,d.x)*Mathf.Rad2Deg);
 
-			/*Vector3 dif = Camera.main.ScreenToWorldPoint (Input.mousePosition) - i.transform.position;
-			Quaternion angle= Quaternion.LookRotation(dif, i.transform.up);
-			i.transform.rotation = Quaternion.Lerp(i.transform.localRotation, angle, Time.deltaTime);
-			*/
+			print (Vector2.Distance( Camera.main.ScreenToWorldPoint (Input.mousePosition), i.transform.position ));
 
-			//MAIS SIMPLES
-			//i.transform.LookAt(Camera.main.ScreenToWorldPoint (Input.mousePosition));
-
-			/*Vector3 relativePos = Camera.main.ScreenToWorldPoint (Input.mousePosition) - i.transform.position;
-			Quaternion rotation = Quaternion.LookRotation( relativePos );
-			i.transform.rotation = rotation;
-			*/
-
-			/*Vector3 vectorToTarget = Camera.main.ScreenToWorldPoint (Input.mousePosition) - i.transform.position;
-			float angle = Mathf.Atan2(vectorToTarget.y, vectorToTarget.x) * Mathf.Rad2Deg;
-			Quaternion q = Quaternion.AngleAxis(angle, Vector3.forward);
-			i.transform.rotation = Quaternion.Slerp(transform.rotation, q, Time.deltaTime * 1);
-			*/
-
-			//i.gameObject.transform.rotation.SetLookRotation( Camera.main.ScreenToWorldPoint (Input.mousePosition) );
+			float t = 5.5f*(Vector2.Distance( Camera.main.ScreenToWorldPoint (Input.mousePosition), i.transform.position ));
+			i.transform.localScale = new Vector3 (t>ButtonPiece.velMax*2?ButtonPiece.velMax*2:t
+			                                     ,i.transform.localScale.y
+			                                     ,i.transform.localScale.z);
 		}
 
 		//if (Input.GetKeyDown (KeyCode.Alpha1)) appear ();
