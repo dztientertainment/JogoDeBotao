@@ -35,7 +35,7 @@ public class Intensity : MonoBehaviour {
 			                                        ,0.0f
 			                                        ,Mathf.Atan2(d.y,d.x)*Mathf.Rad2Deg);
 
-			print (Vector2.Distance( Camera.main.ScreenToWorldPoint (Input.mousePosition), i.transform.position ));
+			//print (Vector2.Distance( Camera.main.ScreenToWorldPoint (Input.mousePosition), i.transform.position ));
 
 			float t = 5.5f*(Vector2.Distance( Camera.main.ScreenToWorldPoint (Input.mousePosition), i.transform.position ));
 			i.transform.localScale = new Vector3 (t>ButtonPiece.velMax*2?ButtonPiece.velMax*2:t

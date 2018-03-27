@@ -7,7 +7,7 @@ public class ButtonPiece : MonoBehaviour {
 	//Velocidade maxima. DEBUG: Evitar transpassar colisores.
 	static public int velMax = 10;
 	//Magnitude maxima. //TODO reduzir a magnitude para 2 ou 2.5. e ajustar linearidade nas diagotnais.
-	static public int magMax = 3;
+	static public int distanceMax = 4;
 
 	//Força do botao
 	public int force;
@@ -24,18 +24,18 @@ public class ButtonPiece : MonoBehaviour {
 		if (clickInitial != Vector3.zero) {
 			//Processa a distancia entre o toque inicial e posiçao atual do click/touch.
 			if (Input.GetMouseButton (0)) {
-				clickDiference = clickInitial - Camera.main.ScreenToWorldPoint (Input.mousePosition);
-				float x = (Mathf.Abs(clickDiference.x) > magMax)? (clickDiference.x < 0 ? -1 : 1)*magMax : clickDiference.x;
-				float y = (Mathf.Abs(clickDiference.y) > magMax)? (clickDiference.y < 0 ? -1 : 1)*magMax : clickDiference.y;
-				clickDiference = new Vector2(x,y);
+				waitToLerp = Vector2.Distance(clickInitial, Camera.main.ScreenToWorldPoint (Input.mousePosition));
+				if(waitToLerp>distanceMax) waitToLerp = distanceMax;
+				waitToLerp *= 2;
 
-				//print ("clickDiference: "+clickDiference+" MAG:"+clickDiference.magnitude);
 			}
-			//Ao liberar, acionar o montante da distancia como força oa objeto
+			//Ao liberar, acionar o montante da distancia como força ao objeto
 			if (Input.GetMouseButtonUp (0)) {
-				GetComponent<Rigidbody2D> ().AddForce ( clickDiference*force );
-				clickInitial = Vector3.zero;
 
+				GetComponent<Rigidbody2D> ().velocity = (clickInitial - Camera.main.ScreenToWorldPoint (Input.mousePosition));
+				//Zerar o clickInitial
+				clickInitial = Vector3.zero;
+				//Retira a barra de força da tela.
 				Intensity.disappear();
 				//Marca que o botao liberou o clique/touch para a camera
 				isUsing = false;
@@ -45,10 +45,10 @@ public class ButtonPiece : MonoBehaviour {
 	}
 
 	void FixedUpdate () {
-		//Simula um "freio" por aderencia (Field.adhesion)
+		//Simula um "freio" por aderencia (Field.adhesion) e a massa da pessa (rigidbody2D.mass)
 		if (GetComponent<Rigidbody2D> ().velocity != Vector2.zero) {
 			if (waitToLerp > 0){
-				waitToLerp -= Field.adhesion * 0.1f;
+				waitToLerp -= Field.adhesion*0.01f*GetComponent<Rigidbody2D>().mass;
 				float x = (Mathf.Abs(GetComponent<Rigidbody2D> ().velocity.x) > velMax)? (GetComponent<Rigidbody2D>().velocity.x<0?-1:1)*velMax : (GetComponent<Rigidbody2D>().velocity.x);
 				float y = (Mathf.Abs(GetComponent<Rigidbody2D> ().velocity.y) > velMax)? (GetComponent<Rigidbody2D>().velocity.y<0?-1:1)*velMax : (GetComponent<Rigidbody2D>().velocity.y);
 				GetComponent<Rigidbody2D> ().velocity = new Vector2(x,y);
@@ -68,11 +68,9 @@ public class ButtonPiece : MonoBehaviour {
 		//Captura a posiçao inicial do clique/touch sobre o objeto
 		if (Input.GetMouseButtonDown (0)) {
 			clickInitial = Camera.main.ScreenToWorldPoint (Input.mousePosition);
-			//Zerar o valor para LERP
-			waitToLerp = Mathf.Abs(GetComponent<Rigidbody2D> ().velocity.magnitude);
-
+			//Exibe a barra de intensidade
 			Intensity.appear( this.gameObject );
-			//Marca que o botao esta usando o clique/touch
+			//Marca que o botao esta usando o clique/touch. Isso inutilizara o zoom.
 			isUsing = true;
 		}
 	}
