@@ -5,43 +5,83 @@ public class ButtonPiece : MonoBehaviour {
 	//Caso verdadeiro, nao pode mover a camera. Pois o botao esta usando o clique/touch
 	static public bool isUsing = false;
 	//Velocidade maxima. DEBUG: Evitar transpassar colisores.
-	static public int velMax = 10;
+	static public int velMax = 20;
 	//Magnitude maxima. //TODO reduzir a magnitude para 2 ou 2.5. e ajustar linearidade nas diagotnais.
-	static public int distanceMax = 4;
-
-	//Força do botao
-	public int force;
+	static public int forceMax = 4;
+	//Registra se esta instancia pertence ao Time 1
+	public bool isTeam1;
 
 	//Valor de decremento para entrar em LERP
 	public float waitToLerp = 0.0f;
 
+	//Posiçao inicial do clique/toque em tela
 	private Vector3 clickInitial;
-	private Vector3 clickDiference;
+
+	//Zera todas as flags
+	public void resetMovement(){
+			//Zerar o clickInitial
+			clickInitial = Vector3.zero;
+			//Retirar a barra de força da tela.
+			Intensity.disappear();
+			//Marca que o botao liberou o clique/touch para a camera
+			isUsing = false;
+	}
+
+	public void applyMovement(Vector2 movement, float force){
+		print ("force: " + force + " forceMax: "+forceMax);
+		//waitToLert equivale a força empregada na peça
+		waitToLerp = force > forceMax ? forceMax : force;
+		print ("applyMovement POS - waitToLerp: " + waitToLerp);
+
+		//x2 na força e movimento. DEBUG: movimentos estavam fracos.
+		//TODO limitar a velocidade do movimento
+		GetComponent<Rigidbody2D> ().velocity = movement*2;
+		waitToLerp = force*2;
+
+		GameController.MovementCount++;
+		//if (GameController.MovementCount==0) StartCoroutine ( GameController.appearArrow(GameController.isTurnOfTeam1) );
+	}
+
 
 	void Update () {
 		//Esta açao começa em OnMouseDown().
 		//Se o objeto foi clicado (clickInitial!=0), entao...
 		if (clickInitial != Vector3.zero) {
-			//Processa a distancia entre o toque inicial e posiçao atual do click/touch.
-			if (Input.GetMouseButton (0)) {
-				waitToLerp = Vector2.Distance(clickInitial, Camera.main.ScreenToWorldPoint (Input.mousePosition));
-				if(waitToLerp>distanceMax) waitToLerp = distanceMax;
-				waitToLerp *= 2;
+			//se clicou tambem o botao direito, cancela a jogada
+			if (Input.GetMouseButton (0) && Input.GetMouseButtonUp (1)) resetMovement();
 
-			}
 			//Ao liberar, acionar o montante da distancia como força ao objeto
 			if (Input.GetMouseButtonUp (0)) {
 
-				GetComponent<Rigidbody2D> ().velocity = (clickInitial - Camera.main.ScreenToWorldPoint (Input.mousePosition));
-				//Zerar o clickInitial
-				clickInitial = Vector3.zero;
-				//Retira a barra de força da tela.
-				Intensity.disappear();
-				//Marca que o botao liberou o clique/touch para a camera
-				isUsing = false;
+				applyMovement (
+					//Calcula a direçao do movimento
+					clickInitial - Camera.main.ScreenToWorldPoint (Input.mousePosition),
+					//Calcula a força do movimento, o qual dara um tempo a percorrer antes iniciar o freio
+				    Vector2.Distance(clickInitial, Camera.main.ScreenToWorldPoint (Input.mousePosition))
+				);
+
+				resetMovement();
 			}
 		}
 
+		runIA ();
+	}
+
+	void OnMouseDown(){
+		//Captura a posiçao inicial do clique/touch sobre o objeto
+		if (Input.GetMouseButtonDown (0)) {
+			//Permite movimento se (time 1 no turno do time 1) e (time 2 no turno do time 2)
+			if(GameController.isTurnOfTeam1==isTeam1){
+				clickInitial = Camera.main.ScreenToWorldPoint (Input.mousePosition);
+				//Exibe a barra de intensidade
+				Intensity.appear( this.gameObject );
+				//Marca que o botao esta usando o clique/touch. Isso inutilizara o zoom.
+				isUsing = true;
+			}
+			else{
+				//TODO //Exibir algum aviso visual informando erro 
+			}
+		}
 	}
 
 	void FixedUpdate () {
@@ -64,16 +104,13 @@ public class ButtonPiece : MonoBehaviour {
 			GetComponent<Rigidbody2D> ().angularVelocity = 0;
 	}
 
-	void OnMouseDown(){
-		//Captura a posiçao inicial do clique/touch sobre o objeto
-		if (Input.GetMouseButtonDown (0)) {
-			clickInitial = Camera.main.ScreenToWorldPoint (Input.mousePosition);
-			//Exibe a barra de intensidade
-			Intensity.appear( this.gameObject );
-			//Marca que o botao esta usando o clique/touch. Isso inutilizara o zoom.
-			isUsing = true;
-		}
-	}
 
+
+
+	public void runIA(){
+		if (Input.GetKeyDown (KeyCode.S)) 
+			applyMovement (GameController.goal1.transform.position, 3);
+	
+	}
 
 }

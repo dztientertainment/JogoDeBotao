@@ -9,18 +9,14 @@ public class Intensity : MonoBehaviour {
 	static private GameObject i;
 
 	static public void appear(GameObject buttonPiece){
-		//Se ja existe um objeto, exclua-o. //DEBUG: Criar varios objetos anonimos na tela .
+		//Se ja existe um objeto, exclua-o. //DEBUG: Criando varios objetos anonimos na tela .
 		if(i!=null) GameObject.Destroy( i );
 		i = (GameObject)GameObject.Instantiate(	intensity
 		                                      	,buttonPiece.transform.position
 		                                        ,Quaternion.identity);
-		//i.transform.position [2] = 0;
 	}
 	static public void disappear(){
 		GameObject.Destroy( i );
-	}
-	static public void render(){
-
 	}
 
 	void Start(){
@@ -34,7 +30,6 @@ public class Intensity : MonoBehaviour {
 			i.transform.rotation = Quaternion.Euler (0.0f
 			                                        ,0.0f
 			                                        ,Mathf.Atan2(d.y,d.x)*Mathf.Rad2Deg);
-
 			//print (Vector2.Distance( Camera.main.ScreenToWorldPoint (Input.mousePosition), i.transform.position ));
 
 			float t = 5.5f*(Vector2.Distance( Camera.main.ScreenToWorldPoint (Input.mousePosition), i.transform.position ));
