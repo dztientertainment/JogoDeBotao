@@ -8,6 +8,8 @@ public class GameController : MonoBehaviour {
 	static public GameObject goal1;
 	static public GameObject goal2;
 
+	static public byte bitTeamA = 0x00;
+
 	//Registra a quantidade de gols por partida
 	static public int goalsForMatch = 3;
 	//Registra a quantidade de movimentos para cada turno
@@ -15,6 +17,8 @@ public class GameController : MonoBehaviour {
 
 	//Controla se a vez de jogar: time 1 ou time 2
 	static public bool isTurnOfTeam1 = false;
+	//Controla permissao para movimentar alguma peça
+	static public bool ishalted = false;
 
 	//Registra o numero de movimentos de um time por vez
 	static private int movementCount = 0;
@@ -27,6 +31,19 @@ public class GameController : MonoBehaviour {
 				 isTurnOfTeam1 = !isTurnOfTeam1;
 			  }
 			}
+	}
+
+	//Exibe a seta que indica o sentido da jogada
+	static public IEnumerator showArrowTurn(  ){
+		if(MovementCount==0){
+			ishalted = true;
+			yield return new WaitForSeconds (1.00f);
+			while(ball.GetComponent<Rigidbody2D>().velocity != Vector2.zero)
+				yield return new WaitForSeconds (0.50f);
+
+			Instantiate (Resources.Load<GameObject> ("Prefab/ArrowTurn"), (Vector2)Camera.main.transform.position, Quaternion.identity);
+			ishalted = false;
+		}
 	}
 
 	//Registra as posiçoes iniciais de cada peça do time
@@ -43,8 +60,7 @@ public class GameController : MonoBehaviour {
 	public int goals2Count;
 
 	//Setas de orietaçao para o turno de cada time
-	public GameObject Arrow1;
-	public GameObject Arrow2;
+	public GameObject arrowTurn;
 
 	public void addGoalOn(int id){
 		if (id == 1) {
@@ -68,7 +84,6 @@ public class GameController : MonoBehaviour {
 			resetGoalsCount ();
 		}
 
-		StartCoroutine ( appearArrow(id==1) );
 
 		//Organizar as peças
 		int i = -1;
@@ -93,21 +108,6 @@ public class GameController : MonoBehaviour {
 		goal2 = GameObject.Find ("Goal2");
 		resetGoalsCount ();
 
-		Arrow1.SetActive (false);
-		Arrow2.SetActive (false);
 	}
 
-	//Exibe a seta que indica o sentido da jogada
-	public IEnumerator appearArrow( bool team1 ){
-		Arrow1.SetActive (team1);
-		Arrow2.SetActive (!team1);
-		yield return new WaitForSeconds (2);
-		Arrow1.SetActive (false);
-		Arrow2.SetActive (false);
-	}
-
-	void Update () {
-	
-
-	}
 }
